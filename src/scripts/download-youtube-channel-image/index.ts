@@ -2,33 +2,45 @@ import { querySelector$ } from "@/utils/$.js";
 import { downloadFile } from "@/utils/download.js";
 import { sha256Blob } from "@/utils/hash.js";
 
-type ImageType = "banner" | "avatar";
-
 (async () => {
-  const channelHandle = querySelector$("#channel-handle")!.textContent!.slice(1);
-  const channelId = (querySelector$("[rel=canonical]") as HTMLLinkElement).href.replace(/^.+\/channel\//, "");
-  const avatarSrc = (querySelector$("#avatar #img") as HTMLImageElement).src;
-  const avatarSize = avatarSrc.match(/=(s\d+)/)![1];
+  const { hostname, pathname } = location;
 
-  const download = async (type: ImageType, size: string, src: string) => {
-    const res = await fetch(src);
-    const blob = await res.blob();
-    const hash = await sha256Blob(blob);
-
-    console.log(hash)
-
-    downloadFile(`${channelId}_${type}_${size}_${hash.slice(0, 32)}_${channelHandle}`, blob);
-  };
-
-  const banner = querySelector$(".page-header-banner-image") as HTMLDivElement | null;
-
-  if (banner) {
-    const style = getComputedStyle(banner);
-    const src = style.getPropertyValue("--yt-channel-banner").replace(/^url\(|\)$/g, "");
-    const size = src.match(/=(w\d+)/)![1];
-
-    await download("banner", size, src);
+  if (
+    !/^www\.youtube\.com$/.test(hostname) ||
+    !/\/?@.+/.test(pathname) && !/^\/?channel\/.+/.test(pathname)
+  ) {
+    return;
   }
 
-  await download("avatar", avatarSize, avatarSrc);
+  const channelHandle = querySelector$("#channel-handle")?.textContent?.slice(1);
+  const channelId = (querySelector$("[rel=canonical]") as HTMLLinkElement | null)?.href.replace(/^.+\/channel\//, "");
+  const avatarSource = (querySelector$("#avatar #img") as HTMLImageElement | null)?.src;
+  const avatarSize = avatarSource?.match(/=(s\d+)/)?.[1];
+
+  if (!channelHandle || !channelId || !avatarSource || !avatarSize) {
+    return;
+  }
+
+  const download = async (type: "banner" | "avatar", size: string, source: string): Promise<void> => {
+    const response = await fetch(source);
+    const blob = await response.blob();
+    const fileExtension = blob.type.split("/")[1];
+    const hash = await sha256Blob(blob);
+
+    await downloadFile(`${channelId}_${type}_${size}_${hash.slice(0, 32)}_${channelHandle}.${fileExtension}`, blob);
+  };
+
+  await download("avatar", avatarSize, avatarSource);
+
+  const bannerElement = querySelector$(".page-header-banner-image") as HTMLDivElement | null;
+
+  if (bannerElement) {
+    const bannerElementStyle = getComputedStyle(bannerElement);
+    const bannerSource = bannerElementStyle.getPropertyValue("--yt-channel-banner").replace(/^url\(|\)$/g, "");
+    const bannerSize = bannerSource.match(/=(w\d+)/)?.[1];
+
+    if (bannerSize) {
+      await download("banner", bannerSize, bannerSource);
+    }
+  }
 })();
