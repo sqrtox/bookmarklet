@@ -27,7 +27,7 @@ import { sha256Blob } from "@/utils/hash.js";
     const fileExtension = blob.type.split("/")[1];
     const hash = await sha256Blob(blob);
 
-    await downloadFile(`${channelId}_${type}_${size}_${hash.slice(0, 32)}_${channelHandle}.${fileExtension}`, blob);
+    downloadFile(`${channelId}_${type}_${size}_${hash.slice(0, 32)}_${channelHandle}.${fileExtension}`, blob);
   };
 
   await download("avatar", avatarSize, avatarSource);
