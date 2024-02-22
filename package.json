@@ -1,0 +1,29 @@
+{
+  "name": "bookmarklet",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "description": "A collection of useful bookmarklets.",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sqrtox/bookmarklet.git"
+  },
+  "keywords": [
+    "bookmarklet"
+  ],
+  "author": "sqrtox",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sqrtox/bookmarklet/issues"
+  },
+  "homepage": "https://github.com/sqrtox/bookmarklet#readme",
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "esbuild": "^0.20.1",
+    "eslint": "^8.56.0",
+    "typescript": "^5.3.3"
+  }
+}
